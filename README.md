@@ -10,7 +10,7 @@
 
 <p>example : </p>
 
-<p>  #include <serial_com.cpp </p>
+<p>  #include serial_com.cpp </p>
 <p>  #define SDA_PIN 21</p>
 <p>  #define SCL_PIN 22</p>
 <p>  #define fr 9600</p>
