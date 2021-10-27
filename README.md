@@ -34,3 +34,6 @@
  <p> void i2c_send(int s_addr , uint8_t* in_put,size_t length); it creats a packet from input bytes and then transfere it to slave by using Wire.write()</p>
  <p> bool read_i2c(int addr ,int max_respponse_len); reads from the slave address ( addr ) </p>
   
+  
+  
+  note: a huge thanks to this amazing git https://github.com/gutierrezps/ESP32_I2C_Slave it really helped with the i2c  
