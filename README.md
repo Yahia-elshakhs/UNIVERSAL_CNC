@@ -145,7 +145,7 @@ Note: (i2c function will be discussed after this state classification code)
 |
  | \* [n+3]: end byte (0x04) |
 
-**1**** st **** function master sending function:**
+**1st function master sending function:**
 
 1. // S\_addr represents the address of slave that will receive the data
 2. // WirePacker is the packed array that we are going to send
@@ -161,7 +161,7 @@ Note: (i2c function will be discussed after this state classification code)
 12. digitalWrite(TX\_LATENCY\_PIN,LOW);
 13. }
 
-**2**** nd **** function master sending function:**
+**2nd  function master sending function:**
 
 1. bool read\_i2c(int addr,int max\_respponse\_len)
 2. {
@@ -205,7 +205,7 @@ Note: (i2c function will be discussed after this state classification code)
 40. }
 41. }
 
-**3**** rd **** function slave receiving function:**
+**3rd function slave receiving function:**
 
 1. void receiveEvent()
 2. {
@@ -220,7 +220,7 @@ Note: (i2c function will be discussed after this state classification code)
 11. requested =true;
 12.  }
 
-  **4**** th **** function slave sending function:**
+  **4th function slave sending function:**
 
 1. // since we still don&#39;t have data to send back we are going to send what we recived x is the array we recived, actual\_recived is the length of the array
 2. Void requestEvent ()
@@ -234,8 +234,8 @@ Note: (i2c function will be discussed after this state classification code)
 10. }
 11. }
 
-In our plan here will be a blocking operation in the slave so we need to create a state machine code that can allow the blocking operation without being interrupted by the interrupt function so the full slave code will be
-
+<p>In our plan here will be a blocking operation in the slave so we need to create a state machine code that can allow the blocking operation without being interrupted by the interrupt function so the full slave code will be
+</p>
 1. void receiveEvent(int howMany);
 2. void requestEvent();
 3. uint8\_t x[32];
@@ -286,8 +286,15 @@ In our plan here will be a blocking operation in the slave so we need to create 
 48. }
 
 
-
-
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
+<p></p>
 
 
 
