@@ -123,7 +123,7 @@ Note: (i2c function will be discussed after this state classification code)
 75. }
 76.
 
-![](RackMultipart20211217-4-1s48rzc_html_a67fd1303f6d74b3.png)The very basic of i2c control is the packaging of the data and error handling thankfully we found a great open source library (gutierrezps, n.d.) That handles these issues wonderfully using a function created called wirepacker/unpacker which uses CRC-8 for error handling
+The very basic of i2c control is the packaging of the data and error handling thankfully we found a great open source library (gutierrezps, n.d.) That handles these issues wonderfully using a function created called wirepacker/unpacker which uses CRC-8 for error handling
 
 | Packet format: |
  |
@@ -234,8 +234,8 @@ Note: (i2c function will be discussed after this state classification code)
 10. }
 11. }
 
-<p>In our plan here will be a blocking operation in the slave so we need to create a state machine code that can allow the blocking operation without being interrupted by the interrupt function so the full slave code will be
-</p>
+In our plan here will be a blocking operation in the slave so we need to create a state machine code that can allow the blocking operation without being interrupted by the interrupt function so the full slave code will be
+
 1. void receiveEvent(int howMany);
 2. void requestEvent();
 3. uint8\_t x[32];
