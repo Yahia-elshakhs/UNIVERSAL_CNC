@@ -1,30 +1,32 @@
-# UNIVERSAL_CNC
 
-we initialize the serial by writing Serial.begin(freq) in the setup, freq can be changed depending on our needs
 
-And then we write in the void loop
+The very first step is receiving and sending the data from and to the computer using serial communication.
 
-1. if(Serial1.available();\&gt;0)
+Doing so in the Arduino framework is pretty easy we initialize the serial by writing Serial.begin(freq) in the setup, Freq can be changed depending on our needs.
+
+And then we write in the void loop.
+
+1. if(Serial.available()\&gt;0)
 2. {
 3. IncomingByte=Serial.read();
 4. // rest of the code
 5. }
 
-And then we need to process these information and send it to the i2c so we need to create a protocol to classify data recived.
+And then we need to process these information and send it to the I2C so we need to create a protocol to classify data received.
 
 To do so we have agreed on the following protocol:
 
-**[number of slaves , length of first data , data[].... ,length of n data , data[] ]**
+_Equation_ _1_ _serial array protocol_
 
 Let us give an example:
 
 [3, 2, x, y, 1, a, 3, f, g, h]
 
-So
+So, number of slave = 3, length of payload for first slave = 2, array to be sent to slave 1 [x, y], Length of 2nd slave payload = 1, array of slave 2 = [a], Length of 3rd slave payload = 3, array of slave 3 [f, g, h].
 
-Number of slave = 3, length of first slave = 2, array to be sent to slave 1 [x, y], Len of slave 2=1, array of slave 2 = [a], Len of slave 3 = 3, array of slave 3 [f, g, h]
+Note:
 
-Note the slave addresses will be initialized manually on both the computer and the slave hardware also all the data sent will be in integer form the data will differ from a slave to slave but all slaves need to recived data nearly at the same time, cause in case of CNC devices the command of the tool (laser for example) should be executed only when x, y is at the exact point needed so we cannot give order to the tool without making sure the x-y-escalators is already where they needed so we will need to send nothing to some slaves while sending data to other slaves and in this case it is pretty simple we just need to make the length of the slave = 0
+the slave addresses will be initialized manually on both the computer and the slave hardware also all the data sent will be in integer form the data will differ from a slave to slave but all slaves need to received data nearly at the same time, cause in case of CNC devices the command of the tool (laser for example) should be executed only when x, y is at the exact point needed so we cannot give order to the tool without making sure the x-y-escalators is already where they needed so we will need to send nothing to some slaves while sending data to other slaves and in this case it is pretty simple we just need to make the length of the slave payload = 0.
 
 Example:
 
@@ -34,15 +36,15 @@ Here we have sent the x y z values while leaving out 5 other slaves we can also 
 
 [8,1,x,1,y,1,z,0,0,1,data,0,0]
 
-The slave number 6 recived the value of data in this case while the other slaves recived nothing
+The slave number 6 received the value of data in this case while the other slaves received nothing
 
-And so based on the soft protocol explained we are going to make code using the following machine state algorithm:
+And so based on the soft protocol explained we are going to make code using the machine state algorithm.
 
-After this state machine
+After this state machine if the state is (receive number of slaves) then receive data from all of the slaves using I2C.
 
-If state is receiving number of slaves then receive data from all of the slaves using i2c
+Note:
 
-Note: (i2c function will be discussed after this state classification code)
+(I2C functions will be discussed after this state classification code)
 
 **State machine code:**
 
@@ -88,7 +90,7 @@ Note: (i2c function will be discussed after this state classification code)
 40. {
 41. // finished with the current slave data:
 42. packer.end();// now transmit the packed data
-43. i2c\_send\_packed(slave\_addr, packer);
+43. I2C\_send\_packed(slave\_addr, packer);
 44. slave\_addr++;
 45. slave\_n--;
 46. if(slave\_n \&lt;=0)
@@ -113,7 +115,7 @@ Note: (i2c function will be discussed after this state classification code)
 65. if(current\_read \&lt;= slave\_number)
 66. {
 67. digitalWrite(POLLING\_PIN,HIGH);
-68. read\_i2c(current\_read,32);// read all the slaves
+68. read\_I2C(current\_read,32);// read all the slaves
 69. digitalWrite(POLLING\_PIN,LOW);
 70. current\_read++;// increase the number of slave to be read
 71. }else
@@ -123,11 +125,18 @@ Note: (i2c function will be discussed after this state classification code)
 75. }
 76.
 
-**The very basic of i2c control is the packaging of the data and error handling thankfully we found a great open source library (gutierrezps, n.d.) That handles these issues wonderfully using a function created called wirepacker/unpacker which uses CRC-8 for error handling**
+ ![Shape2](RackMultipart20220107-4-1w3se40_html_9bc1b403680131ba.gif)
+
+_Figure 17 I2C packet format_
+
+![](RackMultipart20220107-4-1w3se40_html_a67fd1303f6d74b3.png)The very basic of I2C control is the packaging of the data and error handling thankfully we found a great open source library [18] That handles these issues wonderfully using a function created called wire packer/unpacker which uses CRC-8 for error handling.
 
 | Packet format: |
  |
 | --- | --- |
+|
+ |
+ |
 |
  | \* [0]: start byte (0x02) |
 |
@@ -145,11 +154,15 @@ Note: (i2c function will be discussed after this state classification code)
 |
  | \* [n+3]: end byte (0x04) |
 
-**1st function master sending function:**
+And then we used [18] library to create 4 functions:
+
+Master side 1st function is sending function while the 2nd function is the receiving function while slave side 3rd function receiving slave and 4th function sending from slave.
+
+**1**** st **** function master sending function:**
 
 1. // S\_addr represents the address of slave that will receive the data
 2. // WirePacker is the packed array that we are going to send
-3. Void i2c\_send\_packed(int s\_addr,WirePacker&amp; wirepacked)
+3. Void I2C\_send\_packed(int s\_addr,WirePacker&amp; wirepacked)
 4. {
 5. Wire.beginTransmission(s\_addr);
 6. while(wirepacked.available ())
@@ -161,9 +174,9 @@ Note: (i2c function will be discussed after this state classification code)
 12. digitalWrite(TX\_LATENCY\_PIN,LOW);
 13. }
 
-**2nd  function master sending function:**
+**2**** nd **** function master sending function:**
 
-1. bool read\_i2c(int addr,int max\_respponse\_len)
+1. bool read\_I2C(int addr,int max\_respponse\_len)
 2. {
 3. uint8\_t recived[max\_respponse\_len];
 4. size\_t actual\_respponse\_len=0;
@@ -205,7 +218,7 @@ Note: (i2c function will be discussed after this state classification code)
 40. }
 41. }
 
-**3rd function slave receiving function:**
+**3**** rd **** function slave receiving function:**
 
 1. void receiveEvent()
 2. {
@@ -220,22 +233,22 @@ Note: (i2c function will be discussed after this state classification code)
 11. requested =true;
 12.  }
 
-  **4th function slave sending function:**
+  **4**** th **** function slave sending function:**
 
 1. // since we still don&#39;t have data to send back we are going to send what we recived x is the array we recived, actual\_recived is the length of the array
 2. Void requestEvent ()
 3. {
 4. If(requested)
 5. {
-6. Delay(100)
+6. Delay(100);
 7. WireSlave.write(x, actual\_recived);
 8. Serial.write(x, actual\_recived);
 9. requested=false;
 10. }
 11. }
 
-**In our plan here will be a blocking operation in the slave so we need to create a state machine code that can allow the blocking operation without being interrupted by the interrupt function so the full slave code will be
-**
+In our plan here will be a blocking operation in the slave so we need to create a state machine code that can allow the blocking operation without being interrupted by the interrupt function so the full slave code will be:
+
 1. void receiveEvent(int howMany);
 2. void requestEvent();
 3. uint8\_t x[32];
@@ -245,100 +258,44 @@ Note: (i2c function will be discussed after this state classification code)
 7.
 8. typedefenum state
 9. {
-10.   i2c\_recive,
-11.   process,
-12.   i2c\_send
+10.  I2C\_recive,
+11.  process,
+12.  I2C\_send
 13. } state\_in;
 14.
-15. state\_in states = i2c\_recive;
+15. state\_in states = I2C\_recive;
 16.
 17. void setup()
 18. {
-19.     Serial.begin(9600);
-20.     pinMode(sending,OUTPUT);
-21.     bool success =WireSlave.begin(SDA\_PIN, SCL\_PIN, I2C\_SLAVE\_ADDR);
-22.     if(!success){
-23.        // Serial.println(&quot;I2C slave init failed&quot;);
-24.         while(1) delay(100);
-25.     }
+19.   Serial.begin(9600);
+20.   pinMode(sending,OUTPUT);
+21.   bool success =WireSlave.begin(SDA\_PIN, SCL\_PIN, I2C\_SLAVE\_ADDR);
+22.   if(!success){
+23.     // Serial.println(&quot;I2C slave init failed&quot;);
+24.     while(1) delay(100);
+25.   }
 26.
-27.     WireSlave.onReceive(receiveEvent);
-28.     WireSlave.onRequest(requestEvent);
-29.     // Serial.printf(&quot;Slave joined I2C bus with addr #%d\n&quot;, I2C\_SLAVE\_ADDR);
-30.     //
+27.   WireSlave.onReceive(receiveEvent);
+28.   WireSlave.onRequest(requestEvent);
+29.   // Serial.printf(&quot;Slave joined I2C bus with addr #%d\n&quot;, I2C\_SLAVE\_ADDR);
+30.   //
 31. }
 32.
 33. void loop()
 34. {
-35.     switch(states)
-36.     {
-37.       case i2c\_recive:
-38.         WireSlave.update();
-39.         break;
-40.       case process:
-41.         delay(10);
-42.         states = i2c\_send;
-43.         break;
-44.       case i2c\_send:
-45.         WireSlave.update();
-46.         break;
-47.     }
-48. }
-
-
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-<p></p>
-
-
-
-
-
-
-
-<p>the following is the read me for the old que based protocol</p>
-
-<p>main.cpp is the initial version of the code</p>
-<p>serial_com.cpp is the oop version of the code which includes the following functions and can be used using the included example in the read me</p>
-<p>this code was created for serial communication between CNC parts  or for i2c communication between diffrent machines </p>
-<p>it starts by </p>
-<p>the initializing function : comm.start_ser_com(SDA_PIN,SCL_PIN,fr,q_ln); fr refers to the serial communication baud rate , q_ln refers to the length of the que</p>
-<p>and then the serial function ser_to_que(); get information from serial and put it into a que with length = q_ln</p>
-<p>que_to_i2c(); pulls the information from the que after reading the slaves and serial printing there feedback and then writes it to the slaves</p> 
-
-
-<p>example : </p>
-
-<p>  #include serial_com.cpp </p>
-<p>  #define SDA_PIN 21</p>
-<p>  #define SCL_PIN 22</p>
-<p>  #define fr 9600</p>
-
-<p>  void setup()</p>
-<p>  {</p> 
-<p>    comm.start_ser_com(SDA_PIN,SCL_PIN,fr,8);//initialise the i2c </p>
-<p>  }</p>
-<p>  void loop() </p>
-<p>  {</p>
-<p>  ser_to_que();//get information from serial and put it into a que </p>
-<p>  que_to_i2c();//it only takes from the que if the slaves responds back with feedback , and then this feedback is serial printed </p>
-<p>  }   </p>
-  
-  
-  
-  
- <p> other functions created in serial_com.cpp for our algorithm : </p>
- <p> bool que_request(int sl_addr,uint8_t* rec_by,int sl_ln);//it adds to the que the data (slave address , recived_bytes,slave length)</p>
- <p> void add_polled_slave(int slave_address);//moves the que</p>
- <p> void i2c_send(int s_addr , uint8_t* in_put,size_t length); it creats a packet from input bytes and then transfere it to slave by using Wire.write()</p>
- <p> bool read_i2c(int addr ,int max_respponse_len); reads from the slave address ( addr ) </p>
-  
-  
-  
-  note: a huge thanks to this amazing git https://github.com/gutierrezps/ESP32_I2C_Slave it really helped with the i2c  
+35.   if(actual\_recived ==0)
+36.  {
+37.   WireSlave.update();
+38.  }else
+39.  {
+40.   if(m.drive\_ratio(recived[0]\*100+recived[1],recived[3]\*100+recived[3])) // this function will be
+41. // discussed later
+42.   {
+43.    sent\_count=3;
+44.    send[0]=1;
+45.    send[1]=2;
+46.    send[2]=3;
+47.    actual\_recived =0;
+48.   }
+49.  }
+50. }
