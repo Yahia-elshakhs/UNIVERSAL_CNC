@@ -1,3 +1,4 @@
+this Respirotry is the code for "Communication System for Standardized Multipurpose CNC Machine," 2021 IEEE 9th Workshop on Advances in Information, Electronic and Electrical Engineering (AIEEE), 2021, pp. 1-5, doi: 10.1109/AIEEE54188.2021.9670310.
 
 
 The very first step for universal CNC project is receiving and sending the data from and to the computer using serial communication.
