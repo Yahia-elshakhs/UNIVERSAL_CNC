@@ -1,6 +1,6 @@
 
 
-The very first step is receiving and sending the data from and to the computer using serial communication.
+The very first step for universal CNC project is receiving and sending the data from and to the computer using serial communication.
 
 Doing so in the Arduino framework is pretty easy we initialize the serial by writing Serial.begin(freq) in the setup, Freq can be changed depending on our needs.
 
